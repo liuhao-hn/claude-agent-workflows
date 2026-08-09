@@ -13,6 +13,8 @@
 | `skills/coder-critic-review-team/` | **多 Agent 代码审查**：coder-critic 协作评审，无限轮迭代、agent 间直接沟通。适用代码质量把关、PR 审查 |
 | `skills/workflow-to-skill/` | **工作流沉淀**：Agent 工作流结束后自动把流程固化为可复用 Skill 并入系统级目录。适用把一次性复杂流程沉淀成方法论。触发词：沉淀为 skill、记住这个流程 |
 | `guides/claude-code-config-guide/` | **Claude Code 配置指南**（DeepSeek 版保姆级教程）：Node.js → Git → Claude Code → 编辑器 → DeepSeek API 连接 → Skill 导入，含 Windows PowerShell 权限问题。MD / TEX / PDF 三格式 |
+| `caw.py` + `templates/` | **commander-executor 落地 CLI**：把黑板/契约/派发协议变成命令（`caw init / new-task / dispatch / status / handoff`）。纯 Python 标准库，零依赖 |
+| `examples/commander-executor/` | **端到端 demo**：`demo.sh` 一键跑通 init→new-task→dispatch→status→handoff 全流程 |
 
 ## 安装 Skill
 
@@ -35,6 +37,29 @@ ln -s ~/claude-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
 - `resume-generator`：需要 Python3 + `pypdf` + Chrome（`python3 build_resume_{shortname}.py`）
 - `md2pdf`：需要 XeLaTeX（`xelatex`），可选 `ctexart` 文档类
 - `gaodun-essay-grader` / `coder-critic-review-team` / `workflow-to-skill` / `commander-executor`：零依赖，纯提示词
+- `caw.py`：仅 Python3 标准库，零依赖
+
+## caw CLI（把协议变成命令）
+
+`commander-executor` 的落地工具，把 TASKS.md 黑板、契约生成、按执行者派发、状态汇总、跨会话交接全部变成一条命令：
+
+```bash
+# 安装（加个别名即可用）
+alias caw="python3 ~/claude-agent-workflows/caw.py"
+
+# 用法
+caw init                                        # 生成 TASKS.md + artifacts/ 骨架
+caw new-task "修复登录bug" --owner codex --dep 001   # 建契约 + 登记黑板
+caw dispatch 001                                # 按 owner 打印派发命令
+caw dispatch 002 --run                          # 打印后直接执行
+caw status                                      # 汇总状态，标出 BLOCKED/REVIEW
+caw handoff                                     # 生成跨会话交接文档
+```
+
+支持执行者：`zcode`（批量）/ `codex`（debug）/ `codex-deepseek`（省额度）/ `claude-subagent`（只读）。派发命令由 owner 自动路由。
+
+完整演示：`bash examples/commander-executor/demo.sh`
+测试：`python3 -m unittest tests.test_caw`
 
 ## 快速上手
 
@@ -64,6 +89,8 @@ codex "读 artifacts/contract/task-002.md 并严格执行"
 ```
 
 核心原则：任务状态只看 TASKS.md，正文只在 artifacts/；creator 实现、reviewer 只读审查、verifier 核对证据；CRITICAL/HIGH 不通过不标 DONE。完整协议见 `skills/commander-executor/SKILL.md`。
+
+> 以上手动流程可以用 `caw` 工具自动化（见下文「caw CLI」章节）。
 
 其他 skill 的用法见各自 `SKILL.md`，触发条件已在「内容」表格列出。
 
