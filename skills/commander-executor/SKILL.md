@@ -110,7 +110,7 @@ caw init                                       # 生成 TASKS.md + artifacts/ �
 caw new-task "标题" --owner codex --dep 001    # 建规则 + 登记黑板
 caw show 001                                   # 查看规则内容
 caw dispatch 001                               # 按 owner 打印派发命令
-caw review 001                                 # 标记进入审查 REVIEW
+caw review 001 --report "HIGH: 缺单测，退回"    # 审查 REVIEW + 报告存档 artifacts/review/
 caw verify 001 --evidence "pytest 全绿"         # 验证并完成 DONE（记录证据）
 caw done 001                                   # 快捷完成 DONE
 caw status / handoff                           # 汇总状态 / 跨会话交接

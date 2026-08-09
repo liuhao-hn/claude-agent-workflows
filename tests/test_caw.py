@@ -194,8 +194,16 @@ class TestLifecycle(unittest.TestCase):
         return caw.parse_tasks(self.root / "TASKS.md")[0]["status"]
 
     def test_review(self):
-        caw.cmd_review(fake_args(dir=str(self.root), task="001"))
+        caw.cmd_review(fake_args(dir=str(self.root), task="001", report=None))
         self.assertEqual(self._status(), "REVIEW")
+
+    def test_review_with_report(self):
+        caw.cmd_review(fake_args(dir=str(self.root), task="001", report="HIGH: 边界未覆盖，已退回修订"))
+        self.assertEqual(self._status(), "REVIEW")
+        report_files = list((self.root / "artifacts/review").glob("*_001.md"))
+        self.assertTrue(report_files)
+        self.assertIn("审查报告", report_files[0].read_text(encoding="utf-8"))
+        self.assertIn("HIGH", report_files[0].read_text(encoding="utf-8"))
 
     def test_done(self):
         caw.cmd_done(fake_args(dir=str(self.root), task="001"))

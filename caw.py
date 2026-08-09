@@ -249,6 +249,18 @@ def cmd_set(args) -> None:
 
 def cmd_review(args) -> None:
     _set_status(args.dir, args.task, "REVIEW")
+    if args.report:
+        bb = Path(args.dir) / "TASKS.md"
+        tasks = parse_tasks(bb)
+        t = next((x for x in tasks if x["id"] == args.task), None)
+        rdir = Path(args.dir) / "artifacts" / "review"
+        rdir.mkdir(parents=True, exist_ok=True)
+        rpath = rdir / f"{date.today().isoformat()}_{args.task}.md"
+        rpath.write_text(
+            f"# 审查报告｜{args.task}\n\n- 日期：{date.today().isoformat()}\n- 任务：`{t['rule']}`\n\n{args.report}\n",
+            encoding="utf-8",
+        )
+        print(f"报告已存: {rpath}")
 
 
 def cmd_done(args) -> None:
@@ -382,6 +394,7 @@ def main() -> None:
 
     p_review = sub.add_parser("review", help="标记任务进入审查（REVIEW）")
     p_review.add_argument("task", help="任务 ID")
+    p_review.add_argument("--report", help="审查报告文本（存到 artifacts/review/）")
     p_review.add_argument("--dir", default=".", help="项目目录")
     p_review.set_defaults(func=cmd_review)
 

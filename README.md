@@ -53,7 +53,7 @@ caw new-task "修复登录bug" --owner codex --dep 001   # 建规则 + 登记黑
 caw show 001                                    # 查看规则内容
 caw dispatch 001                                # 按 owner 打印派发命令
 caw dispatch 002 --run                          # 打印后直接执行
-caw review 001                                  # 标记进入审查（REVIEW）
+caw review 001 --report "HIGH: 缺单测，退回"     # 审查（REVIEW）+ 报告存档 artifacts/review/
 caw verify 001 --evidence "pytest 全绿"          # 验证并完成（DONE + 记录证据）
 caw done 001                                    # 快捷完成（DONE）
 caw set 001 IN_PROGRESS                         # 更新任意状态
