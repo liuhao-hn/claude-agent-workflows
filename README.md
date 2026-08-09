@@ -108,10 +108,6 @@ codex "读 artifacts/rules/task-002.md 并严格执行"
 
 其他 skill 的用法见各自 `SKILL.md`，触发条件已在「内容」表格列出。
 
-## 致谢 / Credits
-
-部分设计概念参考自 [agents-lab](https://github.com/changocr/agents-lab) 与 [autumn-recruitment-resume-ai-system](https://github.com/changocr/autumn-recruitment-resume-ai-system)（均 MIT）。
-
 ## License
 
 MIT。见 [LICENSE](./LICENSE)。
