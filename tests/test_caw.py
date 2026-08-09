@@ -137,5 +137,30 @@ class TestStatus(unittest.TestCase):
         self.assertIn("BACKLOG=1", out)
 
 
+class TestSet(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp())
+        caw.cmd_init(fake_args(dir=str(self.root)))
+        caw.cmd_new_task(fake_args(dir=str(self.root), title="A", owner="zcode", id=None, dep=None, force=False))
+
+    def test_set_done(self):
+        caw.cmd_set(fake_args(dir=str(self.root), task="001", status="DONE"))
+        tasks = caw.parse_tasks(self.root / "TASKS.md")
+        self.assertEqual(tasks[0]["status"], "DONE")
+
+    def test_set_lowercase(self):
+        caw.cmd_set(fake_args(dir=str(self.root), task="001", status="review"))
+        tasks = caw.parse_tasks(self.root / "TASKS.md")
+        self.assertEqual(tasks[0]["status"], "REVIEW")
+
+    def test_set_invalid_status(self):
+        with self.assertRaises(SystemExit):
+            caw.cmd_set(fake_args(dir=str(self.root), task="001", status="NOPE"))
+
+    def test_set_unknown_task(self):
+        with self.assertRaises(SystemExit):
+            caw.cmd_set(fake_args(dir=str(self.root), task="999", status="DONE"))
+
+
 if __name__ == "__main__":
     unittest.main()

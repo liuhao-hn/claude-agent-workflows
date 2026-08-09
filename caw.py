@@ -10,6 +10,7 @@
   new-task <标题>     创建任务契约并登记到 TASKS.md
   dispatch <任务ID>   按执行者打印派发命令（--run 直接执行）
   status              汇总 TASKS.md 任务状态
+  set <任务ID> <状态>  更新任务状态（BACKLOG/IN_PROGRESS/BLOCKED/REVIEW/DONE）
   handoff             生成跨会话交接文档
 """
 
@@ -209,6 +210,31 @@ def cmd_handoff(args) -> None:
     print(f"已生成: {out}")
 
 
+def cmd_set(args) -> None:
+    bb = Path(args.dir) / "TASKS.md"
+    status = args.status.upper()
+    if status not in STATES:
+        sys.exit(f"无效状态: {status}（可用: {', '.join(STATES)}）")
+    if not bb.exists():
+        sys.exit("未找到 TASKS.md，先运行 caw init")
+    lines = bb.read_text(encoding="utf-8").splitlines()
+    new_lines, changed = [], False
+    for line in lines:
+        s = line.strip()
+        if s.startswith("|"):
+            cells = [c.strip() for c in s.strip("|").split("|")]
+            if len(cells) >= 5 and cells[0].strip("` ").strip() == args.task:
+                cells[2] = status
+                new_lines.append("| " + " | ".join(cells) + " |")
+                changed = True
+                continue
+        new_lines.append(line)
+    if not changed:
+        sys.exit(f"未找到任务: {args.task}")
+    bb.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+    print(f"已更新: {args.task} → {status}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="caw",
@@ -242,6 +268,12 @@ def main() -> None:
     p_ho = sub.add_parser("handoff", help="生成跨会话交接文档")
     p_ho.add_argument("--dir", default=".", help="项目目录")
     p_ho.set_defaults(func=cmd_handoff)
+
+    p_set = sub.add_parser("set", help="更新任务状态")
+    p_set.add_argument("task", help="任务 ID")
+    p_set.add_argument("status", help=f"新状态（{', '.join(STATES)}，大小写均可）")
+    p_set.add_argument("--dir", default=".", help="项目目录")
+    p_set.set_defaults(func=cmd_set)
 
     args = parser.parse_args()
     args.func(args)
