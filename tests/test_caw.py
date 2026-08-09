@@ -162,5 +162,85 @@ class TestSet(unittest.TestCase):
             caw.cmd_set(fake_args(dir=str(self.root), task="999", status="DONE"))
 
 
+class TestShow(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp())
+        caw.cmd_init(fake_args(dir=str(self.root)))
+        caw.cmd_new_task(fake_args(dir=str(self.root), title="刷新任务", owner="zcode", id=None, dep=None, force=False))
+
+    def _cap(self, fn, **kw):
+        buf = io.StringIO()
+        old = sys.stdout
+        sys.stdout = buf
+        try:
+            fn(fake_args(**kw))
+        finally:
+            sys.stdout = old
+        return buf.getvalue()
+
+    def test_show_prints_rule(self):
+        out = self._cap(caw.cmd_show, dir=str(self.root), task="001")
+        self.assertIn("任务：刷新任务", out)
+        self.assertIn("Owner：zcode", out)
+
+
+class TestLifecycle(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp())
+        caw.cmd_init(fake_args(dir=str(self.root)))
+        caw.cmd_new_task(fake_args(dir=str(self.root), title="A", owner="zcode", id=None, dep=None, force=False))
+
+    def _status(self):
+        return caw.parse_tasks(self.root / "TASKS.md")[0]["status"]
+
+    def test_review(self):
+        caw.cmd_review(fake_args(dir=str(self.root), task="001"))
+        self.assertEqual(self._status(), "REVIEW")
+
+    def test_done(self):
+        caw.cmd_done(fake_args(dir=str(self.root), task="001"))
+        self.assertEqual(self._status(), "DONE")
+
+    def test_verify_with_evidence(self):
+        caw.cmd_verify(fake_args(dir=str(self.root), task="001", evidence="pytest 全绿"))
+        self.assertEqual(self._status(), "DONE")
+        rule = self.root / "artifacts/rules/001-a.md"
+        text = rule.read_text(encoding="utf-8")
+        self.assertIn("验证证据", text)
+        self.assertIn("pytest 全绿", text)
+
+
+class TestInstallSync(unittest.TestCase):
+    def test_install_copies_all(self):
+        target = Path(tempfile.mkdtemp())
+        caw.cmd_install(fake_args(skills=[], target=str(target), mode="copy", force=False))
+        self.assertTrue((target / "commander-executor" / "SKILL.md").exists())
+
+    def test_install_skips_existing(self):
+        target = Path(tempfile.mkdtemp())
+        (target / "commander-executor").mkdir(parents=True)
+        (target / "commander-executor" / "SKILL.md").write_text("旧", encoding="utf-8")
+        caw.cmd_install(fake_args(skills=["commander-executor"], target=str(target), mode="copy", force=False))
+        self.assertEqual((target / "commander-executor" / "SKILL.md").read_text(encoding="utf-8"), "旧")
+
+    def test_install_force_overwrites(self):
+        target = Path(tempfile.mkdtemp())
+        (target / "commander-executor").mkdir(parents=True)
+        (target / "commander-executor" / "SKILL.md").write_text("旧", encoding="utf-8")
+        caw.cmd_install(fake_args(skills=["commander-executor"], target=str(target), mode="copy", force=True))
+        self.assertNotEqual((target / "commander-executor" / "SKILL.md").read_text(encoding="utf-8"), "旧")
+
+    def test_sync_skips_protected_by_default(self):
+        target = Path(tempfile.mkdtemp())
+        caw.cmd_sync(fake_args(skills=[], target=str(target), mode="copy"))
+        self.assertTrue((target / "commander-executor" / "SKILL.md").exists())
+        self.assertFalse((target / "resume-generator").exists())
+
+    def test_sync_protected_when_named(self):
+        target = Path(tempfile.mkdtemp())
+        caw.cmd_sync(fake_args(skills=["resume-generator"], target=str(target), mode="copy"))
+        self.assertTrue((target / "resume-generator" / "SKILL.md").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

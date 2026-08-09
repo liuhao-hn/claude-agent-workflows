@@ -13,6 +13,7 @@
 
 import argparse
 import base64
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -21,12 +22,12 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 
 def embed_photo(html: Path, photo: Path) -> str:
-    """把照片 base64 进 HTML 的 {{PHOTO_BASE64}} 占位；无照片则去掉 img 标签。"""
+    """把照片 base64 进 HTML 的 {{PHOTO_BASE64}} 占位；无照片则移除整个 img 标签。"""
     text = html.read_text(encoding="utf-8")
-    if photo.exists():
+    if photo.is_file():
         b64 = base64.b64encode(photo.read_bytes()).decode()
         return text.replace("{{PHOTO_BASE64}}", f"data:image/jpeg;base64,{b64}")
-    return text.replace('src="{{PHOTO_BASE64}}"', "")
+    return re.sub(r'<img[^>]*src="{{PHOTO_BASE64}}"[^>]*>', "", text)
 
 
 def render(html_text: str, out: Path) -> None:

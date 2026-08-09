@@ -101,6 +101,24 @@ description: |
 {必须汇报：跑了哪些命令、产物在哪、测试结果；不得只回"已完成"}
 ```
 
+## caw 工具速查
+
+协议落地为 `caw` CLI（仓库根 `caw.py`），全量子命令：
+
+```bash
+caw init                                       # 生成 TASKS.md + artifacts/ 骨架
+caw new-task "标题" --owner codex --dep 001    # 建规则 + 登记黑板
+caw show 001                                   # 查看规则内容
+caw dispatch 001                               # 按 owner 打印派发命令
+caw review 001                                 # 标记进入审查 REVIEW
+caw verify 001 --evidence "pytest 全绿"         # 验证并完成 DONE（记录证据）
+caw done 001                                   # 快捷完成 DONE
+caw status / handoff                           # 汇总状态 / 跨会话交接
+caw install / sync                             # 装/同步 skills 到 ~/.claude/skills/
+```
+
+完整子命令说明见仓库 README「caw CLI」章节。
+
 ## 流程
 
 1. **拆解**：指挥官读 TASKS.md 与项目，把目标拆成有依赖边界的任务，标 owner 与顺序。

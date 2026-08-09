@@ -9,13 +9,20 @@
   init                生成 TASKS.md + artifacts/ 骨架
   new-task <标题>     创建任务规则并登记到 TASKS.md
   dispatch <任务ID>   按执行者打印派发命令（--run 直接执行）
+  show <任务ID>       查看任务规则内容
   status              汇总 TASKS.md 任务状态
   set <任务ID> <状态>  更新任务状态（BACKLOG/IN_PROGRESS/BLOCKED/REVIEW/DONE）
+  review <任务ID>     标记任务进入审查（REVIEW）
+  verify <任务ID>     验证并完成（DONE + 记录证据）
+  done <任务ID>       快捷完成（DONE）
   handoff             生成跨会话交接文档
+  install             把仓库 skills 装进本地（默认跳过已存在）
+  sync                把仓库 skills 同步到本地（默认跳过 resume-generator）
 """
 
 import argparse
 import re
+import shutil
 import subprocess
 import sys
 from collections import Counter
@@ -24,6 +31,8 @@ from pathlib import Path
 
 STATES = ("BACKLOG", "IN_PROGRESS", "BLOCKED", "REVIEW", "DONE")
 OWNERS = ("zcode", "codex", "codex-deepseek", "claude-subagent")
+# sync/install 默认保护的 skill：本地含真实私有数据，仓库是脱敏模板，不能被覆盖
+PROTECTED_SKILLS = ("resume-generator",)
 
 DISPATCH = {
     "zcode": 'zcode "读 {rule} 并严格执行"',
@@ -210,9 +219,8 @@ def cmd_handoff(args) -> None:
     print(f"已生成: {out}")
 
 
-def cmd_set(args) -> None:
-    bb = Path(args.dir) / "TASKS.md"
-    status = args.status.upper()
+def _set_status(dir_str: str, task_id: str, status: str) -> None:
+    bb = Path(dir_str) / "TASKS.md"
     if status not in STATES:
         sys.exit(f"无效状态: {status}（可用: {', '.join(STATES)}）")
     if not bb.exists():
@@ -223,16 +231,108 @@ def cmd_set(args) -> None:
         s = line.strip()
         if s.startswith("|"):
             cells = [c.strip() for c in s.strip("|").split("|")]
-            if len(cells) >= 5 and cells[0].strip("` ").strip() == args.task:
+            if len(cells) >= 5 and cells[0].strip("` ").strip() == task_id:
                 cells[2] = status
                 new_lines.append("| " + " | ".join(cells) + " |")
                 changed = True
                 continue
         new_lines.append(line)
     if not changed:
-        sys.exit(f"未找到任务: {args.task}")
+        sys.exit(f"未找到任务: {task_id}")
     bb.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
-    print(f"已更新: {args.task} → {status}")
+    print(f"已更新: {task_id} → {status}")
+
+
+def cmd_set(args) -> None:
+    _set_status(args.dir, args.task, args.status.upper())
+
+
+def cmd_review(args) -> None:
+    _set_status(args.dir, args.task, "REVIEW")
+
+
+def cmd_done(args) -> None:
+    _set_status(args.dir, args.task, "DONE")
+
+
+def cmd_verify(args) -> None:
+    _set_status(args.dir, args.task, "DONE")
+    if args.evidence:
+        bb = Path(args.dir) / "TASKS.md"
+        tasks = parse_tasks(bb)
+        t = next((x for x in tasks if x["id"] == args.task), None)
+        rpath = Path(args.dir) / t["rule"].strip("`")
+        rpath.write_text(
+            rpath.read_text(encoding="utf-8")
+            + f"\n## 验证证据（{date.today().isoformat()}）\n\n{args.evidence}\n",
+            encoding="utf-8",
+        )
+        print(f"证据已记录到: {rpath}")
+
+
+def cmd_show(args) -> None:
+    bb = Path(args.dir) / "TASKS.md"
+    tasks = parse_tasks(bb)
+    t = next((x for x in tasks if x["id"] == args.task), None)
+    if not t:
+        sys.exit(f"未找到任务: {args.task}")
+    rpath = Path(args.dir) / t["rule"].strip("`")
+    if not rpath.exists():
+        sys.exit(f"规则文件不存在: {rpath}")
+    print(f"# {t['id']} [{t['status']}] owner={t['owner']} 阻塞={t['blockers']}")
+    print("-" * 44)
+    print(rpath.read_text(encoding="utf-8"), end="")
+
+
+def _skill_names() -> list:
+    skills_dir = HERE / "skills"
+    return sorted(d.name for d in skills_dir.iterdir() if d.is_dir() and (d / "SKILL.md").exists())
+
+
+def _copy_skill(name: str, target: Path, mode: str) -> None:
+    src = HERE / "skills" / name
+    dst = target / name
+    if dst.is_symlink() or dst.exists():
+        if dst.is_dir() and not dst.is_symlink():
+            shutil.rmtree(dst)
+        else:
+            dst.unlink(missing_ok=True)
+    if mode == "link":
+        dst.symlink_to(src, target_is_directory=True)
+        print(f"  链接: {dst}")
+    else:
+        shutil.copytree(src, dst)
+        print(f"  已装: {dst}")
+
+
+def cmd_install(args) -> None:
+    target = Path(args.target).expanduser()
+    target.mkdir(parents=True, exist_ok=True)
+    skills = args.skills or _skill_names()
+    for name in skills:
+        if name not in _skill_names():
+            sys.exit(f"仓库无此 skill: {name}")
+        dst = target / name
+        if (dst.exists() or dst.is_symlink()) and not args.force:
+            print(f"  跳过(已存在): {name}（用 --force 覆盖）")
+            continue
+        _copy_skill(name, target, args.mode)
+    print(f"完成。目标: {target}")
+
+
+def cmd_sync(args) -> None:
+    target = Path(args.target).expanduser()
+    target.mkdir(parents=True, exist_ok=True)
+    if args.skills:
+        skills = args.skills
+    else:
+        skills = [n for n in _skill_names() if n not in PROTECTED_SKILLS]
+        print(f"（默认跳过受保护: {', '.join(PROTECTED_SKILLS)}，如需覆盖请显式指定 skill 名）")
+    for name in skills:
+        if name not in _skill_names():
+            sys.exit(f"仓库无此 skill: {name}")
+        _copy_skill(name, target, args.mode)
+    print(f"完成。目标: {target}")
 
 
 def main() -> None:
@@ -274,6 +374,40 @@ def main() -> None:
     p_set.add_argument("status", help=f"新状态（{', '.join(STATES)}，大小写均可）")
     p_set.add_argument("--dir", default=".", help="项目目录")
     p_set.set_defaults(func=cmd_set)
+
+    p_show = sub.add_parser("show", help="查看任务规则内容")
+    p_show.add_argument("task", help="任务 ID")
+    p_show.add_argument("--dir", default=".", help="项目目录")
+    p_show.set_defaults(func=cmd_show)
+
+    p_review = sub.add_parser("review", help="标记任务进入审查（REVIEW）")
+    p_review.add_argument("task", help="任务 ID")
+    p_review.add_argument("--dir", default=".", help="项目目录")
+    p_review.set_defaults(func=cmd_review)
+
+    p_verify = sub.add_parser("verify", help="验证并完成（DONE + 记录证据）")
+    p_verify.add_argument("task", help="任务 ID")
+    p_verify.add_argument("--evidence", help="验证证据文本")
+    p_verify.add_argument("--dir", default=".", help="项目目录")
+    p_verify.set_defaults(func=cmd_verify)
+
+    p_done = sub.add_parser("done", help="快捷完成（DONE）")
+    p_done.add_argument("task", help="任务 ID")
+    p_done.add_argument("--dir", default=".", help="项目目录")
+    p_done.set_defaults(func=cmd_done)
+
+    p_install = sub.add_parser("install", help="把仓库 skills 装进本地（默认跳过已存在）")
+    p_install.add_argument("skills", nargs="*", help="skill 名（默认全部）")
+    p_install.add_argument("--target", default="~/.claude/skills", help="目标目录")
+    p_install.add_argument("--mode", choices=("copy", "link"), default="copy", help="copy=复制 / link=软链接")
+    p_install.add_argument("--force", action="store_true", help="覆盖已存在")
+    p_install.set_defaults(func=cmd_install)
+
+    p_sync = sub.add_parser("sync", help="把仓库 skills 同步到本地（默认跳过 resume-generator）")
+    p_sync.add_argument("skills", nargs="*", help="skill 名（默认除 resume-generator 外全部）")
+    p_sync.add_argument("--target", default="~/.claude/skills", help="目标目录")
+    p_sync.add_argument("--mode", choices=("copy", "link"), default="copy", help="copy=复制 / link=软链接")
+    p_sync.set_defaults(func=cmd_sync)
 
     args = parser.parse_args()
     args.func(args)
