@@ -1,0 +1,521 @@
+\documentclass[12pt,a4paper]{ctexart}
+
+% ==== Packages ====
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{fancyvrb}
+\usepackage{fvextra}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{graphicx}
+
+% ==== Code block style ====
+\DefineVerbatimEnvironment{shcode}{Verbatim}
+  {fontsize=\small,frame=single,framesep=4pt,rulecolor=\color{gray!50},breaklines,breakanywhere}
+\DefineVerbatimEnvironment{jsoncode}{Verbatim}
+  {fontsize=\footnotesize,frame=single,framesep=4pt,rulecolor=\color{gray!50},breaklines,breakanywhere}
+
+% ==== Metadata ====
+\title{\textbf{Claude Code 完整配置指南\\[4pt]
+\large DeepSeek 版}}
+\author{}
+\date{2026年7月}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent 适合\textbf{零编程基础}用户，覆盖从 Node.js 安装、Git 配置、Claude Code 本体安装，到 DeepSeek API 连接、自定义 Skill 导入的全流程。全程约 20--30 分钟，Windows 和 Mac 用户均可轻松上手。特别补充了 Windows PowerShell 权限问题的解决方案，以及将他人分享的 Skill 能力包导入 Claude Code 的完整步骤。
+\end{abstract}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{整体流程预览}
+
+整个安装分为 6 步：
+
+\begin{enumerate}[nosep]
+    \item \textbf{安装 Node.js}（电脑的翻译器）
+    \item \textbf{安装 Git}（文件管理器）
+    \item \textbf{安装 Claude Code 本体}（AI 大脑）
+    \item \textbf{安装编辑器}（VS Code 或 Trae）
+    \item \textbf{配置 API 连接}（让 AI 连上 DeepSeek 服务器）
+    \item \textbf{导入 Skill}（安装别人分享的专属 AI 能力包）
+\end{enumerate}
+
+\section{第一步：安装 Node.js}
+
+Claude Code 需要 Node.js 作为运行环境，可以把它理解成一个``翻译器''。
+
+\subsection{Windows}
+
+\begin{enumerate}[nosep]
+    \item 打开浏览器，访问 \url{https://nodejs.org/en/download/}
+    \item 点击 \textbf{Windows Installer (.msi)} 下载
+    \item 双击下载的文件，一路点 \textbf{Next}（所有默认选项都对）
+    \item 验证安装：按 \texttt{Win} 键，输入 \textbf{PowerShell}，回车打开
+\end{enumerate}
+
+\begin{shcode}
+node -v
+\end{shcode}
+
+看到类似 \texttt{v20.10.0} 就成功了。
+
+\begin{shcode}
+npm -v
+\end{shcode}
+
+\textbf{如果 npm -v 报红字错误（常见于首次使用 PowerShell）}，先输入：
+
+\begin{shcode}
+Set-ExecutionPolicy RemoteSigned
+\end{shcode}
+
+会提示输入 \texttt{Y} 确认，输完后再试 \texttt{npm -v} 看到版本号就正常了。
+
+\subsection{Mac}
+
+\begin{enumerate}[nosep]
+    \item 访问 \url{https://nodejs.org/en/download/}
+    \item 点击 \textbf{macOS Installer (.pkg)} 下载
+    \item 双击安装，按提示操作
+    \item 打开终端（在启动台搜索``终端''），验证：
+\end{enumerate}
+
+\begin{shcode}
+node -v
+npm -v
+\end{shcode}
+
+\section{第二步：安装 Git}
+
+Git 是版本管理工具，Claude Code 需要它来管理文件。
+
+\subsection{Windows}
+
+\begin{enumerate}[nosep]
+    \item 访问 \url{https://git-scm.com/downloads}
+    \item 下载 Windows 版本，双击安装
+    \item 大部分选项保持默认，重点注意：当看到 \textbf{``Adjusting your PATH environment''} 页面时，选择中间那个选项：\textbf{Git from the command line and also from 3rd-party software}
+    \item 其他页面直接点 Next
+\end{enumerate}
+
+\begin{shcode}
+git --version
+\end{shcode}
+
+看到版本号即成功。
+
+\subsection{Mac}
+
+Mac 通常自带 Git。打开终端输入：
+
+\begin{shcode}
+git --version
+\end{shcode}
+
+如果没装，系统会自动弹窗提示安装 Xcode Command Line Tools，点安装即可。
+
+\section{第三步：安装 Claude Code 本体}
+
+打开 \textbf{PowerShell}（Windows）或\textbf{终端}（Mac），输入：
+
+\begin{shcode}
+npm install -g @anthropic-ai/claude-code --registry=https://registry.npmmirror.com
+\end{shcode}
+
+\texttt{--registry=https://registry.npmmirror.com} 是使用国内镜像，下载更快。
+
+等待几分钟，看到文字停止滚动且没有红色 \texttt{error} 字样，即安装成功。
+
+\textbf{注意：}不要在命令前加 \texttt{sudo}，否则可能导致权限问题。
+
+\section{第四步：安装编辑器}
+
+编辑器是 Claude Code 的工作台，通过它和 AI 对话。二选一即可。
+
+\subsection{选项一：VS Code（推荐）}
+
+\begin{itemize}[nosep]
+    \item 下载地址：\url{https://code.visualstudio.com/}
+    \item Windows：下载后双击安装，建议勾选``添加到 PATH''和``添加右键菜单''
+    \item Mac：下载后把 \texttt{Visual Studio Code.app} 拖到应用程序文件夹
+\end{itemize}
+
+\subsection{选项二：Trae IDE}
+
+\begin{itemize}[nosep]
+    \item 下载地址：\url{https://www.trae.cn/}
+    \item 字节跳动旗下产品，基于 VS Code，界面对中文用户更友好
+    \item 下载后双击安装即可
+\end{itemize}
+
+\section{第五步：配置 API 连接}
+
+这是最关键的一步。
+
+\subsection{安装 Claude Code 插件}
+
+\begin{enumerate}[nosep]
+    \item 打开 VS Code 或 Trae
+    \item 点击侧边栏的\textbf{扩展图标}（四个方块图案）
+    \item 搜索：\textbf{Claude Code for VS Code}
+    \item 点击安装
+\end{enumerate}
+
+\subsection{获取 DeepSeek API Key}
+
+\begin{enumerate}[nosep]
+    \item 打开浏览器，访问 \url{https://platform.deepseek.com/}
+    \item 注册 / 登录账号
+    \item 进入 \textbf{API Keys} 页面，点击``创建新的 API Key''
+    \item 复制保存这串 Key（格式类似 \texttt{sk-xxxxxxxxxxxxxxxx}）
+\end{enumerate}
+
+\textbf{重要：}API Key 相当于密码，请妥善保管，不要分享给他人或发到网上。
+
+\subsection{写入配置文件}
+
+\begin{enumerate}[nosep]
+    \item 在 VS Code / Trae 中，按快捷键：
+    \begin{itemize}[nosep]
+        \item Windows：\texttt{Ctrl + Shift + P}
+        \item Mac：\texttt{Cmd + Shift + P}
+    \end{itemize}
+    \item 输入：\textbf{Preferences: Open User Settings (JSON)}
+    \item 回车，会打开一个 JSON 配置文件
+    \item 将以下内容粘贴进去（如果文件已有其他内容，合并时注意 JSON 格式）：
+\end{enumerate}
+
+\begin{jsoncode}
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+    "ANTHROPIC_AUTH_TOKEN": "你的DeepSeek-API-Key粘贴在这里",
+    "ANTHROPIC_MODEL": "DeepSeek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "DeepSeek-v4-flash",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "DeepSeek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "DeepSeek-v4-pro[1m]",
+    "ANTHROPIC_REASONING_MODEL": "DeepSeek-v4-pro[1m]",
+    "ENABLE_TOOL_SEARCH": "true"
+  },
+  "includeCoAuthoredBy": false,
+  "enabledPlugins": {
+    "claude-hud@claude-hud": true,
+    "skill-creator@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "claude-hud": {
+      "source": {
+        "source": "github",
+        "repo": "jarrodwatts/claude-hud"
+      }
+    }
+  },
+  "effortLevel": "high"
+}
+\end{jsoncode}
+
+\textbf{关键操作：}找到 \texttt{"你的DeepSeek-API-Key粘贴在这里"} 这一行，把中文部分替换成 DeepSeek API Key。\textbf{其他地方不要动。}
+
+替换后类似：\texttt{"sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+
+\subsection{保存并重启}
+
+\begin{itemize}[nosep]
+    \item 按 \texttt{Ctrl + S}（Windows）或 \texttt{Cmd + S}（Mac）保存
+    \item \textbf{完全关闭} VS Code / Trae，再重新打开
+    \item 重启后配置才能生效
+\end{itemize}
+
+\subsection{测试}
+
+\begin{enumerate}[nosep]
+    \item 打开 VS Code / Trae，随便打开一个文件夹
+    \item 点击 Claude Code 图标（通常在侧边栏或右上角）
+    \item 输入 \texttt{你好}
+    \item AI 回复你了 $\to$ 配置成功！
+\end{enumerate}
+
+\section{第六步：导入 Skill（AI 能力包）}
+
+Skill 是别人配置好的专属 AI 能力，导入后 Claude Code 会自动识别并加载。
+
+\subsection{获取 Skill 包}
+
+你会拿到一个或多个 \texttt{.tar.gz} 文件，放到桌面上。
+
+两个包可选：
+
+\begin{itemize}[nosep]
+    \item \texttt{claude-skills-all.tar.gz}（推荐）：全部 22 个 Skill，含自定义 + Minimax + Stata
+    \item \texttt{claude-skills-export.tar.gz}：7 个自定义 + Stata Skill
+\end{itemize}
+
+\subsection{解压安装}
+
+\textbf{Mac 用户——打开终端，输入：}
+
+\begin{shcode}
+# 安装全部 22 个 Skill（推荐）
+tar -xzf ~/Desktop/claude-skills-all.tar.gz -C ~/.claude/skills/
+
+# 或仅安装 7 个 Skill（自定义 + Stata）
+tar -xzf ~/Desktop/claude-skills-export.tar.gz -C ~/.claude/skills/
+\end{shcode}
+
+\textbf{Windows 用户——打开 PowerShell，输入：}
+
+\begin{shcode}
+# 安装全部 22 个 Skill（推荐）
+tar -xzf "$env:USERPROFILE\Desktop\claude-skills-all.tar.gz" -C "$env:USERPROFILE\.claude\skills\"
+
+# 或仅安装 7 个 Skill（自定义 + Stata）
+tar -xzf "$env:USERPROFILE\Desktop\claude-skills-export.tar.gz" -C "$env:USERPROFILE\.claude\skills\"
+\end{shcode}
+
+如果 Windows 提示找不到 tar 命令，先安装 7-Zip 手动解压，再把解压出的文件夹复制到 \texttt{C:\textbackslash Users\textbackslash 你的用户名\textbackslash .claude\textbackslash skills\textbackslash} 目录下。
+
+\subsection{验证}
+
+解压完成后，确保目录结构如下：
+
+\begin{shcode}
+~/.claude/skills/
+├── academic-search/
+│   └── SKILL.md
+├── coder-critic-review-team/
+│   └── SKILL.md
+├── deeppapernote/
+│   └── SKILL.md
+└── gaodun-essay-grader/
+    └── SKILL.md
+\end{shcode}
+
+重启 Claude Code 后，输入对话触发相应功能即可自动加载 Skill。
+
+\subsection{本 Skill 包包含的能力}
+
+\subsubsection*{自定义 Skill（6 个）}
+
+{
+\centering
+\begin{tabular}{>{\RaggedRight\arraybackslash}p{5.2cm}>{\RaggedRight\arraybackslash}p{9.3cm}}
+\toprule
+\textbf{Skill} & \textbf{说明} \\
+\midrule
+{\small\texttt{academic-search}} & 经济学论文搜索、引用分析，支持中英文多平台（arXiv、SSRN、NBER、知网等） \\
+\midrule
+{\small\texttt{coder-critic-review-team}} & 多 Agent 代码审查协作工作流 \\
+\midrule
+{\small\texttt{deeppapernote}} & 论文深度阅读笔记生成（输出 Obsidian 格式） \\
+\midrule
+{\small\texttt{gaodun-essay-grader}} & 申论大作文五维度批改（40分制评分体系） \\
+\midrule
+{\small\texttt{md2pdf}} & MD→TEX→PDF 专业中文排版（ctexart + booktabs 风格） \\
+\midrule
+{\small\texttt{workflow-to-skill}} & 工作流自动沉淀引擎（任务结束 → 生成 Skill → 更新 Memory） \\
+\bottomrule
+\end{tabular}
+\par}
+
+\vspace{8pt}
+
+\subsubsection*{Minimax Skill（14 个）}
+
+{
+\centering
+\small
+\begin{tabular}{>{\RaggedRight\arraybackslash}p{5.2cm}>{\RaggedRight\arraybackslash}p{9.3cm}}
+\toprule
+\textbf{Skill} & \textbf{说明} \\
+\midrule
+\texttt{minimax-docx} & 专业 DOCX 文档创建、编辑和格式化 \\
+\midrule
+\texttt{minimax-pdf} & 高质量 PDF 生成（创建/填充/重排） \\
+\midrule
+\texttt{minimax-xlsx} & Excel 电子表格创建、分析和格式化 \\
+\midrule
+\texttt{pptx-generator} & PowerPoint 演示文稿生成和编辑 \\
+\midrule
+\texttt{android-native-dev} & Android 原生开发指南（Material Design 3/Kotlin） \\
+\midrule
+\texttt{flutter-dev} & Flutter 跨平台开发（Riverpod/GoRouter） \\
+\midrule
+\texttt{ios-application-dev} & iOS 应用开发指南（UIKit/SnapKit/SwiftUI） \\
+\midrule
+\texttt{react-native-dev} & React Native/Expo 开发指南 \\
+\midrule
+\texttt{frontend-dev} & 前端全栈开发（动画/媒体/文案） \\
+\midrule
+\texttt{fullstack-dev} & 全栈后端架构与前后端集成 \\
+\midrule
+\texttt{minimax-multimodal-toolkit} & MiniMax 多模态模型（语音/音乐/视频/图像生成） \\
+\midrule
+\texttt{gif-sticker-maker} & 照片转 GIF 动画贴纸 \\
+\midrule
+\texttt{shader-dev} & GLSL 着色器特效开发 \\
+\midrule
+\texttt{vision-analysis} & 图像分析与描述（OCR/图表/截图理解） \\
+\bottomrule
+\end{tabular}
+\par}
+
+\vspace{8pt}
+
+\subsubsection*{Stata Skill（2 个）}
+
+{
+\centering
+\small
+\begin{tabular}{>{\RaggedRight\arraybackslash}p{5.2cm}>{\RaggedRight\arraybackslash}p{9.3cm}}
+\toprule
+\textbf{Skill} & \textbf{说明} \\
+\midrule
+\texttt{stata} & Stata 代码完整参考（.do 文件、计量经济学、因果推断、Mata 编程） \\
+\midrule
+\texttt{stata-c-plugins} & Stata C 插件开发指南 \\
+\bottomrule
+\end{tabular}
+\par}
+
+\subsection{通过 Marketplace 安装更多 Skill（可选）}
+
+除了上述打包好的 Skill，还可以从 GitHub Marketplace 安装官方维护的插件和 Skill。在 Claude Code 对话中直接输入以下命令：
+
+\subsubsection*{Minimax Skills（14 个开发/文档/媒体 Skill）}
+
+\begin{shcode}
+/plugin marketplace add minimax-skills git https://github.com/MiniMax-AI/skills.git
+\end{shcode}
+
+\subsubsection*{Claude Code 官方插件（skill-creator、superpowers 等）}
+
+\begin{shcode}
+/plugin marketplace add claude-plugins-official github anthropics/claude-plugins-official
+\end{shcode}
+
+\subsubsection*{Claude HUD（终端状态栏）}
+
+\begin{shcode}
+/plugin marketplace add claude-hud github jarrodwatts/claude-hud
+\end{shcode}
+
+\subsubsection*{Stata Skill（Stata 代码参考）}
+
+\begin{shcode}
+/plugin marketplace add stata-skill github dylantmoore/stata-skill
+\end{shcode}
+
+添加 Marketplace 后，Skill 会自动加载可用，无需额外安装步骤。如需启用/禁用特定插件，在 settings.json 的 \texttt{enabledPlugins} 中配置。
+
+\textbf{已安装的 Marketplace 一览：}
+
+{
+\centering
+\small
+\begin{tabular}{>{\RaggedRight\arraybackslash}p{3.5cm}>{\RaggedRight\arraybackslash}p{4.5cm}>{\RaggedRight\arraybackslash}p{6.5cm}}
+\toprule
+\textbf{Marketplace} & \textbf{来源} & \textbf{提供内容} \\
+\midrule
+minimax-skills & GitHub: MiniMax-AI/skills & 14 个 Skill（文档/开发/媒体） \\
+\midrule
+stata-skill & GitHub: dylantmoore/stata-skill & 2 个 Stata Skill \\
+\midrule
+claude-plugins-official & GitHub: anthropics/claude-plugins-official & 36 个插件（skill-creator、code-review、security-guidance 等） \\
+\midrule
+claude-hud & GitHub: jarrodwatts/claude-hud & 终端状态栏 HUD \\
+\bottomrule
+\end{tabular}
+\par}
+
+\vspace{8pt}
+
+\textbf{汇总：}共 4 个 Marketplace，提供 22 个可打包分享的 Skill + 36 个需在线安装的代码插件。
+
+\newpage
+
+\section{常见问题}
+
+\subsection{npm install 提示权限错误（EACCES）}
+
+不要用 sudo。按以下步骤修复：
+
+\textbf{Mac：}
+
+\begin{shcode}
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.zshrc
+source ~/.zshrc
+\end{shcode}
+
+重新打开终端，再次尝试安装。
+
+\subsection{npm -v 报错（Windows PowerShell）}
+
+\begin{shcode}
+Set-ExecutionPolicy RemoteSigned
+\end{shcode}
+
+输入 \texttt{Y} 确认，然后重新执行 \texttt{npm -v}。
+
+\subsection{API 连接失败}
+
+\begin{enumerate}[nosep]
+    \item 确认 API Key 复制正确，没有多余空格和换行
+    \item 确认 settings.json 中的 JSON 格式正确（注意逗号和引号不能错）
+    \item 确认已\textbf{完全关闭并重新打开}编辑器
+    \item 检查网络连接是否正常（DeepSeek API 需要稳定的网络）
+\end{enumerate}
+
+\subsection{Skill 没有生效}
+
+\begin{enumerate}[nosep]
+    \item 确认文件夹放在了正确的路径（\texttt{\textasciitilde/.claude/skills/} 下）
+    \item 每个 Skill 文件夹里必须有一个 \texttt{SKILL.md} 文件
+    \item 重启 Claude Code
+\end{enumerate}
+
+\section{安装完成检查清单}
+
+{
+\centering
+\begin{tabular}{>{\centering\arraybackslash}p{0.6cm}>{\RaggedRight\arraybackslash}p{13.9cm}}
+\toprule
+& \textbf{检查项} \\
+\midrule
+$\square$ & Node.js 已安装（\texttt{node -v} 显示版本号） \\
+\midrule
+$\square$ & Git 已安装（\texttt{git --version} 显示版本号） \\
+\midrule
+$\square$ & Claude Code 已安装（\texttt{claude --version} 无报错） \\
+\midrule
+$\square$ & VS Code 或 Trae 已安装 \\
+\midrule
+$\square$ & Claude Code 插件已安装 \\
+\midrule
+$\square$ & DeepSeek API Key 已配置到 settings.json \\
+\midrule
+$\square$ & 启动后输入``你好''得到 AI 回复 \\
+\midrule
+$\square$ & Skill 包已解压到 \texttt{\textasciitilde/.claude/skills/} 目录 \\
+\bottomrule
+\end{tabular}
+\par}
+
+\vspace{12pt}
+
+全部打勾？恭喜，配置完成！
+
+\end{document}
