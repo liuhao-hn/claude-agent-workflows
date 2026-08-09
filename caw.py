@@ -7,7 +7,7 @@
 
 子命令：
   init                生成 TASKS.md + artifacts/ 骨架
-  new-task <标题>     创建任务契约并登记到 TASKS.md
+  new-task <标题>     创建任务规则并登记到 TASKS.md
   dispatch <任务ID>   按执行者打印派发命令（--run 直接执行）
   status              汇总 TASKS.md 任务状态
   set <任务ID> <状态>  更新任务状态（BACKLOG/IN_PROGRESS/BLOCKED/REVIEW/DONE）
@@ -26,10 +26,10 @@ STATES = ("BACKLOG", "IN_PROGRESS", "BLOCKED", "REVIEW", "DONE")
 OWNERS = ("zcode", "codex", "codex-deepseek", "claude-subagent")
 
 DISPATCH = {
-    "zcode": 'zcode "读 {contract} 并严格执行"',
-    "codex": 'codex "读 {contract} 并严格执行"',
-    "codex-deepseek": 'codex-deepseek "读 {contract} 并严格执行"',
-    "claude-subagent": "（只读任务）用 Claude 子代理执行，契约：{contract}",
+    "zcode": 'zcode "读 {rule} 并严格执行"',
+    "codex": 'codex "读 {rule} 并严格执行"',
+    "codex-deepseek": 'codex-deepseek "读 {rule} 并严格执行"',
+    "claude-subagent": "（只读任务）用 Claude 子代理执行，规则：{rule}",
 }
 
 HERE = Path(__file__).resolve().parent
@@ -74,7 +74,7 @@ def parse_tasks(blackboard: Path) -> list:
             "id": tid,
             "owner": cells[1].strip(),
             "status": cells[2].strip(),
-            "contract": cells[3].strip(),
+            "rule": cells[3].strip(),
             "blockers": cells[4].strip(),
         })
     return tasks
@@ -105,7 +105,7 @@ def cmd_init(args) -> None:
     else:
         bb.write_text(load_template("TASKS.md.tpl"), encoding="utf-8")
         print(f"已创建: {bb}")
-    for sub in ("contract", "review", "verify", "handoff"):
+    for sub in ("rules", "review", "verify", "handoff"):
         p = root / "artifacts" / sub
         p.mkdir(parents=True, exist_ok=True)
         print(f"已创建: {p}/")
@@ -122,20 +122,20 @@ def cmd_new_task(args) -> None:
         sys.exit(f"任务 ID 已存在: {tid}")
     slug = slugify(args.title)
     fname = f"{tid}-{slug}.md"
-    cpath = root / "artifacts" / "contract" / fname
-    if cpath.exists() and not args.force:
-        sys.exit(f"契约已存在: {cpath}（用 --force 覆盖）")
-    cpath.parent.mkdir(parents=True, exist_ok=True)
-    tpl = load_template("contract.md.tpl")
-    cpath.write_text(
+    rpath = root / "artifacts" / "rules" / fname
+    if rpath.exists() and not args.force:
+        sys.exit(f"规则已存在: {rpath}（用 --force 覆盖）")
+    rpath.parent.mkdir(parents=True, exist_ok=True)
+    tpl = load_template("rule.md.tpl")
+    rpath.write_text(
         render(tpl, id=tid, title=args.title, owner=args.owner, dep=args.dep or "None"),
         encoding="utf-8",
     )
-    rel = cpath.relative_to(root)
+    rel = rpath.relative_to(root)
     row = f"| `{tid}` | {args.owner} | BACKLOG | `{rel}` | {args.dep or 'None'} |"
     text = bb.read_text(encoding="utf-8").rstrip() + "\n" + row + "\n"
     bb.write_text(text, encoding="utf-8")
-    print(f"已创建契约: {cpath}")
+    print(f"已创建规则: {rpath}")
     print(f"已登记: {bb} → {tid} ({args.owner}, BACKLOG)")
 
 
@@ -148,7 +148,7 @@ def cmd_dispatch(args) -> None:
     owner = t["owner"]
     if owner not in DISPATCH:
         sys.exit(f"未知执行者: {owner}（可用: {', '.join(OWNERS)}）")
-    command = DISPATCH[owner].format(contract=t["contract"].strip("`"))
+    command = DISPATCH[owner].format(rule=t["rule"].strip("`"))
     print(command)
     if args.run:
         print(f"# 执行: {command}", file=sys.stderr)
@@ -173,12 +173,12 @@ def cmd_status(args) -> None:
     if done:
         print("\n已完成:")
         for t in done:
-            print(f"  ✓ {t['id']:>6} {t['contract']}")
+            print(f"  ✓ {t['id']:>6} {t['rule']}")
     todo = [t for t in tasks if t["status"] in ("BACKLOG", "IN_PROGRESS")]
     if todo:
         print("\n待推进:")
         for t in todo:
-            print(f"  → {t['id']:>6} [{t['status']}] owner={t['owner']:>14} {t['contract']}")
+            print(f"  → {t['id']:>6} [{t['status']}] owner={t['owner']:>14} {t['rule']}")
 
 
 def cmd_handoff(args) -> None:
@@ -196,11 +196,11 @@ def cmd_handoff(args) -> None:
         "",
     ]
     done = [t for t in tasks if t["status"] == "DONE"]
-    lines += [f"- {t['id']} {t['contract']}" for t in done] or ["- 无"]
+    lines += [f"- {t['id']} {t['rule']}" for t in done] or ["- 无"]
     lines += ["", "## 进行中 / 阻塞", ""]
     active = [t for t in tasks if t["status"] in ("IN_PROGRESS", "BLOCKED", "REVIEW")]
     lines += [
-        f"- {t['id']} [{t['status']}] owner={t['owner']} 阻塞={t['blockers']} 契约={t['contract']}"
+        f"- {t['id']} [{t['status']}] owner={t['owner']} 阻塞={t['blockers']} 规则={t['rule']}"
         for t in active
     ] or ["- 无"]
     lines += ["", "## 下一步", ""]
@@ -246,12 +246,12 @@ def main() -> None:
     p_init.add_argument("--dir", default=".", help="项目目录（默认当前目录）")
     p_init.set_defaults(func=cmd_init)
 
-    p_new = sub.add_parser("new-task", help="创建任务契约并登记到 TASKS.md")
+    p_new = sub.add_parser("new-task", help="创建任务规则并登记到 TASKS.md")
     p_new.add_argument("title", help="任务标题")
     p_new.add_argument("--owner", choices=OWNERS, default="codex", help="执行者")
     p_new.add_argument("--id", help="任务 ID（默认自动编号）")
     p_new.add_argument("--dep", help="阻塞源任务 ID")
-    p_new.add_argument("--force", action="store_true", help="覆盖已存在的契约")
+    p_new.add_argument("--force", action="store_true", help="覆盖已存在的规则")
     p_new.add_argument("--dir", default=".", help="项目目录")
     p_new.set_defaults(func=cmd_new_task)
 

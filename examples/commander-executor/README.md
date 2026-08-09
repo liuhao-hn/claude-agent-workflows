@@ -4,22 +4,22 @@
 
 ```
 examples/commander-executor/
-├── TASKS.md                                   # 任务黑板：owner/状态/契约/阻塞
-└── artifacts/contract/
-    └── 002-full-refresh-job.md                # 一份自包含任务契约（派发给 zcode/codex）
+├── TASKS.md                                   # 任务黑板：owner/状态/规则/阻塞
+└── artifacts/rules/
+    └── 002-full-refresh-job.md                # 一份自包含任务规则（派发给 zcode/codex）
 ```
 
 ## 使用流程
 
 1. **拆解**：Claude 读 `TASKS.md`，把目标拆成有依赖边界的任务，标 owner 与顺序。
-2. **写契约**：每个待派发任务写 `artifacts/contract/{task}.md`，正文全进文件，聊天只传状态与路径。
+2. **写规则**：每个待派发任务写 `artifacts/rules/{task}.md`，正文全进文件，聊天只传状态与路径。
 3. **派发**（按任务类型选执行者）：
 
    ```bash
    # 全量/批量任务 → zcode（GLM）
-   zcode "读 artifacts/contract/002-full-refresh-job.md 并严格执行"
+   zcode "读 artifacts/rules/002-full-refresh-job.md 并严格执行"
    # 疑难 debug → codex（GPT）
-   codex "读 artifacts/contract/001-fix-login-bug.md 并严格执行"
+   codex "读 artifacts/rules/001-fix-login-bug.md 并严格执行"
    ```
 
 4. **审查**：Claude 只读审查 diff，CRITICAL/HIGH 阻断，退回修订后复审。

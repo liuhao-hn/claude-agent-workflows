@@ -37,10 +37,10 @@ class TestParse(unittest.TestCase):
         bb = Path(tempfile.mkdtemp()) / "TASKS.md"
         bb.write_text(
             "# Task Blackboard\n\n"
-            "| Task | Owner | Status | Contract / Output | Blockers |\n"
+            "| Task | Owner | Status | 规则 / 产出 | Blockers |\n"
             "|---|---|---|---|---|\n"
-            "| `001-a` | codex | DONE | `artifacts/contract/001-a.md` | None |\n"
-            "| `002-b` | zcode | REVIEW | `artifacts/contract/002-b.md` | `001-a` |\n",
+            "| `001-a` | codex | DONE | `artifacts/rules/001-a.md` | None |\n"
+            "| `002-b` | zcode | REVIEW | `artifacts/rules/002-b.md` | `001-a` |\n",
             encoding="utf-8",
         )
         tasks = caw.parse_tasks(bb)
@@ -62,10 +62,10 @@ class TestNewTask(unittest.TestCase):
     def test_init_creates_skeleton(self):
         caw.cmd_init(fake_args(dir=str(self.root)))
         self.assertTrue((self.root / "TASKS.md").exists())
-        for sub in ("contract", "review", "verify", "handoff"):
+        for sub in ("rules", "review", "verify", "handoff"):
             self.assertTrue((self.root / "artifacts" / sub).is_dir())
 
-    def test_new_task_creates_contract_and_row(self):
+    def test_new_task_creates_rule_and_row(self):
         caw.cmd_init(fake_args(dir=str(self.root)))
         caw.cmd_new_task(fake_args(dir=str(self.root), title="修复登录bug", owner="codex", id=None, dep=None, force=False))
         tasks = caw.parse_tasks(self.root / "TASKS.md")
@@ -73,11 +73,11 @@ class TestNewTask(unittest.TestCase):
         self.assertEqual(tasks[0]["id"], "001")
         self.assertEqual(tasks[0]["owner"], "codex")
         self.assertEqual(tasks[0]["status"], "BACKLOG")
-        rel = tasks[0]["contract"].strip("`")
-        contract = self.root / rel
-        self.assertTrue(contract.exists())
-        self.assertIn("修复登录bug", contract.read_text(encoding="utf-8"))
-        self.assertIn("Owner：codex", contract.read_text(encoding="utf-8"))
+        rel = tasks[0]["rule"].strip("`")
+        rule_path = self.root / rel
+        self.assertTrue(rule_path.exists())
+        self.assertIn("修复登录bug", rule_path.read_text(encoding="utf-8"))
+        self.assertIn("Owner：codex", rule_path.read_text(encoding="utf-8"))
 
     def test_new_task_auto_increments(self):
         caw.cmd_init(fake_args(dir=str(self.root)))
@@ -108,7 +108,7 @@ class TestDispatch(unittest.TestCase):
         out = self._capture(caw.cmd_dispatch, dir=str(self.root), task="001", run=False)
         self.assertIn("zcode", out)
         self.assertIn("并严格执行", out)
-        self.assertIn("artifacts/contract/001", out)
+        self.assertIn("artifacts/rules/001", out)
 
     def test_dispatch_codex(self):
         caw.cmd_new_task(fake_args(dir=str(self.root), title="修bug", owner="codex", id=None, dep=None, force=False))
