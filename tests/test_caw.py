@@ -234,7 +234,8 @@ class TestInstallSync(unittest.TestCase):
         target = Path(tempfile.mkdtemp())
         caw.cmd_sync(fake_args(skills=[], target=str(target), mode="copy"))
         self.assertTrue((target / "commander-executor" / "SKILL.md").exists())
-        self.assertFalse((target / "resume-generator").exists())
+        for name in caw.PROTECTED_SKILLS:
+            self.assertFalse((target / name).exists(), f"{name} 应被默认保护")
 
     def test_sync_protected_when_named(self):
         target = Path(tempfile.mkdtemp())

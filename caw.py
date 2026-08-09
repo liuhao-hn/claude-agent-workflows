@@ -31,8 +31,8 @@ from pathlib import Path
 
 STATES = ("BACKLOG", "IN_PROGRESS", "BLOCKED", "REVIEW", "DONE")
 OWNERS = ("zcode", "codex", "codex-deepseek", "claude-subagent")
-# sync/install 默认保护的 skill：本地含真实私有数据，仓库是脱敏模板，不能被覆盖
-PROTECTED_SKILLS = ("resume-generator",)
+# sync 默认保护的 skill：本地含真实私有数据（真实路径/真实经历），仓库是脱敏模板，不能被覆盖
+PROTECTED_SKILLS = ("resume-generator", "gaodun-essay-grader", "workflow-to-skill")
 
 DISPATCH = {
     "zcode": 'zcode "读 {rule} 并严格执行"',
