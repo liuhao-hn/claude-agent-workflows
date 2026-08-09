@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """caw — Claude Agent Workflows CLI.
 
 把 commander-executor 的「指挥官—多执行者」协作协议落地为命令行工具。
@@ -42,7 +41,24 @@ DISPATCH = {
 }
 
 HERE = Path(__file__).resolve().parent
-TEMPLATES = HERE / "templates"
+
+
+def _resolve_data_dir() -> Path:
+    """定位 templates/ 与 skills/：源码/可编辑安装用仓库根，pip 安装用 data-files 落点。"""
+    candidates = (
+        HERE,
+        HERE.parent,
+        Path(sys.prefix) / "share" / "claude-multi-agent-workflows",
+        Path(sys.prefix) / "local" / "share" / "claude-multi-agent-workflows",
+    )
+    for c in candidates:
+        if (c / "templates").is_dir() and (c / "skills").is_dir():
+            return c
+    return HERE
+
+
+DATA = _resolve_data_dir()
+TEMPLATES = DATA / "templates"
 
 
 def load_template(name: str) -> str:
@@ -297,7 +313,7 @@ def cmd_show(args) -> None:
 
 
 def _skill_names() -> list:
-    skills_dir = HERE / "skills"
+    skills_dir = DATA / "skills"
     return sorted(d.name for d in skills_dir.iterdir() if d.is_dir() and (d / "SKILL.md").exists())
 
 

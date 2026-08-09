@@ -67,7 +67,9 @@ class TestNewTask(unittest.TestCase):
 
     def test_new_task_creates_rule_and_row(self):
         caw.cmd_init(fake_args(dir=str(self.root)))
-        caw.cmd_new_task(fake_args(dir=str(self.root), title="修复登录bug", owner="codex", id=None, dep=None, force=False))
+        caw.cmd_new_task(
+            fake_args(dir=str(self.root), title="修复登录bug", owner="codex", id=None, dep=None, force=False)
+        )
         tasks = caw.parse_tasks(self.root / "TASKS.md")
         self.assertEqual(len(tasks), 1)
         self.assertEqual(tasks[0]["id"], "001")
@@ -249,6 +251,22 @@ class TestInstallSync(unittest.TestCase):
         target = Path(tempfile.mkdtemp())
         caw.cmd_sync(fake_args(skills=["resume-generator"], target=str(target), mode="copy"))
         self.assertTrue((target / "resume-generator" / "SKILL.md").exists())
+
+
+class TestHandoff(unittest.TestCase):
+    def setUp(self):
+        self.root = Path(tempfile.mkdtemp())
+        caw.cmd_init(fake_args(dir=str(self.root)))
+        caw.cmd_new_task(fake_args(dir=str(self.root), title="A", owner="zcode", id=None, dep=None, force=False))
+
+    def test_handoff_creates_file(self):
+        caw.cmd_handoff(fake_args(dir=str(self.root)))
+        files = list((self.root / "artifacts" / "handoff").glob("*_handoff.md"))
+        self.assertTrue(files)
+        text = files[0].read_text(encoding="utf-8")
+        self.assertIn("Handoff", text)
+        self.assertIn("001", text)
+        self.assertIn("派发 001", text)
 
 
 if __name__ == "__main__":

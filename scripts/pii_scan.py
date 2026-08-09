@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """scripts/pii_scan.py — 扫描仓库是否混入 PII/敏感信息。
 
 用法：python scripts/pii_scan.py

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """build_resume_example.py — 单页中文简历构建脚本示例。
 
 工作流：HTML（含 CSS style + 占位照片 src）→ Chrome headless 渲染 → A4 单页 PDF → pypdf 校验页数。
