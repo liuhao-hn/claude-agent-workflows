@@ -35,6 +35,19 @@ jobs:
       - name: 端到端 demo
         run: bash examples/commander-executor/demo.sh
 
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 覆盖率报告
+        run: |
+          pip install coverage
+          coverage run --source=caw -m unittest tests.test_caw
+          coverage report -m
+
   privacy:
     runs-on: ubuntu-latest
     steps:
