@@ -22,15 +22,15 @@
 
 ```bash
 # 克隆本仓库
-git clone https://github.com/liuhao-hn/claude-agent-workflows ~/claude-agent-workflows
+git clone https://github.com/liuhao-hn/claude-multiple-agent-workflows ~/claude-multiple-agent-workflows
 
 # 方式一：复制全部 skill（独立副本，推荐新手）
 mkdir -p ~/.claude/skills
-cp -r ~/claude-agent-workflows/skills/* ~/.claude/skills/
+cp -r ~/claude-multiple-agent-workflows/skills/* ~/.claude/skills/
 
 # 方式二：软链接（跟随仓库更新，推荐进阶用户）
-ln -s ~/claude-agent-workflows/skills/commander-executor ~/.claude/skills/commander-executor
-ln -s ~/claude-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
+ln -s ~/claude-multiple-agent-workflows/skills/commander-executor ~/.claude/skills/commander-executor
+ln -s ~/claude-multiple-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
 ```
 
 依赖说明：
@@ -45,7 +45,7 @@ ln -s ~/claude-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
 
 ```bash
 # 安装（加个别名即可用）
-alias caw="python3 ~/claude-agent-workflows/caw.py"
+alias caw="python3 ~/claude-multiple-agent-workflows/caw.py"
 
 # 用法（任务管理）
 caw init                                        # 生成 TASKS.md + artifacts/ 骨架
@@ -66,6 +66,8 @@ caw sync                                        # 仓库 skills 同步到本地�
 ```
 
 支持执行者：`zcode`（批量）/ `codex`（debug）/ `codex-deepseek`（省额度）/ `claude-subagent`（只读）。派发命令由 owner 自动路由。
+
+> ⚠️ **codex 非交互执行注意**：`codex exec` 需加 `-s workspace-write`，否则默认沙箱写入不持久化；在 `~/` 受信目录可省 `--skip-git-repo-check`。`codex-deepseek` 只适合纯文本，agentic 写文件请用 codex-GPT 或 Claude 子代理。
 
 完整演示：`bash examples/commander-executor/demo.sh`
 测试：`python3 -m unittest tests.test_caw`
