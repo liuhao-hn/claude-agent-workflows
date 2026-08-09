@@ -16,6 +16,7 @@
 | `skills/workflow-to-skill/` | **工作流沉淀**：Agent 工作流结束后自动把流程固化为可复用 Skill 并入系统级目录。适用把一次性复杂流程沉淀成方法论。触发词：沉淀为 skill、记住这个流程 |
 | `guides/claude-code-config-guide/` | **Claude Code 配置指南**（DeepSeek 版保姆级教程）：Node.js → Git → Claude Code → 编辑器 → DeepSeek API 连接 → Skill 导入，含 Windows PowerShell 权限问题。MD / TEX / PDF 三格式 |
 | `caw.py` + `templates/` | **commander-executor 落地 CLI**：`init / new-task / show / dispatch / review / verify / done / set / status / handoff / install / sync` 十二子命令。纯 Python 标准库，零依赖 |
+| `DESIGN.md` | **设计文档**：为什么这样编排（黑板/规则契约/职责分离/薄编排）、完整生命周期、以及如何迁移到你自己的栈 |
 | `examples/commander-executor/` | **端到端 demo**：`demo.sh` 一键跑通 init→new-task→dispatch→status→handoff 全流程 |
 
 ## 安装 Skill
