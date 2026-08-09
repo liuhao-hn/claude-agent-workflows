@@ -13,7 +13,7 @@
 | `skills/coder-critic-review-team/` | **多 Agent 代码审查**：coder-critic 协作评审，无限轮迭代、agent 间直接沟通。适用代码质量把关、PR 审查 |
 | `skills/workflow-to-skill/` | **工作流沉淀**：Agent 工作流结束后自动把流程固化为可复用 Skill 并入系统级目录。适用把一次性复杂流程沉淀成方法论。触发词：沉淀为 skill、记住这个流程 |
 | `guides/claude-code-config-guide/` | **Claude Code 配置指南**（DeepSeek 版保姆级教程）：Node.js → Git → Claude Code → 编辑器 → DeepSeek API 连接 → Skill 导入，含 Windows PowerShell 权限问题。MD / TEX / PDF 三格式 |
-| `caw.py` + `templates/` | **commander-executor 落地 CLI**：把黑板/规则/派发协议变成命令（`caw init / new-task / dispatch / status / handoff`）。纯 Python 标准库，零依赖 |
+| `caw.py` + `templates/` | **commander-executor 落地 CLI**：把黑板/规则/派发/状态管理变成命令（`caw init / new-task / dispatch / set / status / handoff`）。纯 Python 标准库，零依赖 |
 | `examples/commander-executor/` | **端到端 demo**：`demo.sh` 一键跑通 init→new-task→dispatch→status→handoff 全流程 |
 
 ## 安装 Skill
@@ -52,6 +52,7 @@ caw init                                        # 生成 TASKS.md + artifacts/ �
 caw new-task "修复登录bug" --owner codex --dep 001   # 建规则 + 登记黑板
 caw dispatch 001                                # 按 owner 打印派发命令
 caw dispatch 002 --run                          # 打印后直接执行
+caw set 001 IN_PROGRESS                         # 更新任务状态（BACKLOG/IN_PROGRESS/BLOCKED/REVIEW/DONE）
 caw status                                      # 汇总状态，标出 BLOCKED/REVIEW
 caw handoff                                     # 生成跨会话交接文档
 ```
