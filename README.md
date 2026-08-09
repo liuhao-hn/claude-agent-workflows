@@ -1,5 +1,7 @@
 # Claude Agent Workflows
 
+![CI](https://github.com/liuhao-hn/claude-multi-agent-workflows/actions/workflows/test.yml/badge.svg)
+
 一套跨 Claude Code / Codex / ZCode 的个人工作流 Skill 集合与 Claude Code 配置指南。
 
 ## 内容
