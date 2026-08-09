@@ -107,10 +107,7 @@ codex "读 artifacts/rules/task-002.md 并严格执行"
 
 ## 致谢 / Credits
 
-设计思路受以下 MIT 项目启发：
-
-- [changocr/agents-lab](https://github.com/changocr/agents-lab) — 任务黑板 / artifacts 消息总线 / creator-reviewer-verifier 职责分离
-- [changocr/autumn-recruitment-resume-ai-system](https://github.com/changocr/autumn-recruitment-resume-ai-system) — 事实库唯一事实源 / 竞争策略 / 行业路由 / 表达保护 / 独立质检
+部分设计概念参考自 [agents-lab](https://github.com/changocr/agents-lab) 与 [autumn-recruitment-resume-ai-system](https://github.com/changocr/autumn-recruitment-resume-ai-system)（均 MIT）。
 
 ## License
 
