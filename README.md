@@ -14,9 +14,33 @@
 | `skills/workflow-to-skill/` | **工作流沉淀**：Agent 工作流结束后自动把流程沉淀为可复用 Skill，并入系统级目录 |
 | `guides/claude-code-config-guide/` | **Claude Code 完整配置指南**（DeepSeek 版保姆级教程）：Node.js → Git → Claude Code → 编辑器 → DeepSeek API 连接 → Skill 导入，含 Windows PowerShell 权限问题。MD / TEX / PDF 三格式 |
 
+## 安装 Skill
+
+所有 Skill 都是标准 Claude Code Skill（`SKILL.md` + 可选 `references/`）。安装到本地即可被 Claude Code 自动识别：
+
+```bash
+# 克隆本仓库
+git clone https://github.com/liuhao-hn/claude-agent-workflows ~/claude-agent-workflows
+
+# 方式一：复制全部 skill（独立副本，推荐新手）
+mkdir -p ~/.claude/skills
+cp -r ~/claude-agent-workflows/skills/* ~/.claude/skills/
+
+# 方式二：软链接（跟随仓库更新，推荐进阶用户）
+ln -s ~/claude-agent-workflows/skills/commander-executor ~/.claude/skills/commander-executor
+ln -s ~/claude-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
+```
+
+依赖说明：
+- `resume-generator`：需要 Python3 + `pypdf` + Chrome（`python3 build_resume_{shortname}.py`）
+- `md2pdf`：需要 XeLaTeX（`xelatex`），可选 `ctexart` 文档类
+- `gaodun-essay-grader` / `coder-critic-review-team` / `workflow-to-skill` / `commander-executor`：零依赖，纯提示词
+
 ## 快速上手
 
 ### commander-executor（多 Agent 分工）
+
+一个可直接套用的最小示例见 [`examples/commander-executor/`](./examples/commander-executor/)。
 
 适用于大型/长期项目，由 Claude 统筹、多个外部 CLI 执行：
 
