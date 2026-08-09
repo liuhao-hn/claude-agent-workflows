@@ -10,9 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-ruff@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: ruff 检查
-        run: ruff check caw.py scripts tests skills/resume-generator/build_resume_example.py
+        run: |
+          pip install ruff
+          ruff check caw.py scripts tests skills/resume-generator/build_resume_example.py
 
   test:
     runs-on: ubuntu-latest
