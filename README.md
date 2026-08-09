@@ -8,6 +8,10 @@
 |---|---|
 | `skills/commander-executor/` | **指挥官—多执行者**工作流：Claude 当指挥官（规则/拆解/分配/审查/验收/总结），执行者名册（zcode=批量、codex=debug、claude 子代理=只读）通过 TASKS.md 黑板 + artifacts/ 契约总线协作 |
 | `skills/resume-generator/` | **校招简历生成器（模板版）**：事实库 → 竞争策略 → 行业路由 → 表达保护 → 质检 Reviewer，生成单页中文简历 PDF。本目录为脱敏模板，填入真实数据前请先阅读其中隐私提示 |
+| `skills/gaodun-essay-grader/` | **申论大作文批改**：模拟高顿五维评分体系（立意/论证/素材/语言/结构），40 分制评分 + 逐维度分析 + 改进示例 + 提分优先级 |
+| `skills/md2pdf/` | **MD → 专业中文 PDF**：严格 TFP 排版风格，MD → TEX（ctexart）→ PDF（XeLaTeX）管线 |
+| `skills/coder-critic-review-team/` | **多 Agent 代码审查团队**：coder-critic 协作评审，无限轮迭代，agent 间直接沟通 |
+| `skills/workflow-to-skill/` | **工作流沉淀**：Agent 工作流结束后自动把流程沉淀为可复用 Skill，并入系统级目录 |
 | `guides/claude-code-config-guide/` | **Claude Code 完整配置指南**（DeepSeek 版保姆级教程）：Node.js → Git → Claude Code → 编辑器 → DeepSeek API 连接 → Skill 导入，含 Windows PowerShell 权限问题。MD / TEX / PDF 三格式 |
 
 ## 快速上手

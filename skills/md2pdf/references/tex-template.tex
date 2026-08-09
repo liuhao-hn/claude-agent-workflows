@@ -1,0 +1,50 @@
+\documentclass[12pt,a4paper]{ctexart}
+
+% ==== 段落容错 ====
+\emergencystretch=1em
+
+% ==== Packages ====
+\usepackage{amsmath,amssymb}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+\usepackage{fancyvrb}
+\usepackage{fvextra}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+% ==== Code block styles ====
+\DefineVerbatimEnvironment{shcode}{Verbatim}
+  {fontsize=\small,frame=single,framesep=4pt,rulecolor=\color{gray!50},breaklines,breakanywhere}
+\DefineVerbatimEnvironment{jsoncode}{Verbatim}
+  {fontsize=\footnotesize,frame=single,framesep=4pt,rulecolor=\color{gray!50},breaklines,breakanywhere}
+\DefineVerbatimEnvironment{stata}{Verbatim}
+  {fontsize=\small,frame=single,framesep=4pt,rulecolor=\color{gray!50},breaklines,breakanywhere}
+\DefineVerbatimEnvironment{pythoncode}{Verbatim}
+  {fontsize=\small,frame=single,framesep=4pt,rulecolor=\color{gray!50},breaklines,breakanywhere}
+
+% ==== Metadata ====
+\title{\textbf{<标题>\\[4pt]
+\large <副标题>}}
+\author{}
+\date{<日期>}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent <摘要内容>
+\end{abstract}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+% ==== 正文内容 ====
+
+\end{document}
