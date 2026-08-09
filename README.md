@@ -22,15 +22,15 @@
 
 ```bash
 # 克隆本仓库
-git clone https://github.com/liuhao-hn/claude-multiple-agent-workflows ~/claude-multiple-agent-workflows
+git clone https://github.com/liuhao-hn/claude-multi-agent-workflows ~/claude-multi-agent-workflows
 
 # 方式一：复制全部 skill（独立副本，推荐新手）
 mkdir -p ~/.claude/skills
-cp -r ~/claude-multiple-agent-workflows/skills/* ~/.claude/skills/
+cp -r ~/claude-multi-agent-workflows/skills/* ~/.claude/skills/
 
 # 方式二：软链接（跟随仓库更新，推荐进阶用户）
-ln -s ~/claude-multiple-agent-workflows/skills/commander-executor ~/.claude/skills/commander-executor
-ln -s ~/claude-multiple-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
+ln -s ~/claude-multi-agent-workflows/skills/commander-executor ~/.claude/skills/commander-executor
+ln -s ~/claude-multi-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
 ```
 
 依赖说明：
@@ -45,7 +45,7 @@ ln -s ~/claude-multiple-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
 
 ```bash
 # 安装（加个别名即可用）
-alias caw="python3 ~/claude-multiple-agent-workflows/caw.py"
+alias caw="python3 ~/claude-multi-agent-workflows/caw.py"
 
 # 用法（任务管理）
 caw init                                        # 生成 TASKS.md + artifacts/ 骨架
