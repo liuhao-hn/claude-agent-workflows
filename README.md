@@ -47,8 +47,13 @@ ln -s ~/claude-multi-agent-workflows/skills/md2pdf ~/.claude/skills/md2pdf
 `commander-executor` 的落地工具，把 TASKS.md 黑板、规则生成、按执行者派发、状态汇总、跨会话交接全部变成一条命令：
 
 ```bash
-# 安装（加个别名即可用）
+# 安装（二选一）
+#   方式一：克隆后加个别名
 alias caw="python3 ~/claude-multi-agent-workflows/caw.py"
+#   方式二：pip 安装（推荐，caw 进 PATH；templates/skills 会随包安装）
+pip install ~/claude-multi-agent-workflows
+#   可选：可编辑安装（源码改动即时生效，适合跟随仓库更新）
+pip install -e ~/claude-multi-agent-workflows
 
 # 用法（任务管理）
 caw init                                        # 生成 TASKS.md + artifacts/ 骨架
